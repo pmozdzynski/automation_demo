@@ -4,6 +4,10 @@
         source  = "hetznercloud/hcloud"
         version = "~> 1.54.0"
       }
+      null = {
+        source  = "hashicorp/null"
+        version = "~> 3.2.0"
+      }
     }
   }
 
@@ -19,14 +23,38 @@
     location    = "hel1"              # Helsinki
   }
 
-# Generate a local inventory file for Ansible with SSH options to ignore host key checking ( when hetzner provided new server ) 
-resource "local_file" "ansible_inventory" {
-  content = <<EOT
-[web]
-${hcloud_server.web.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+  # Create the custom index.html file on the server
+  resource "null_resource" "deploy_web_content" {
+    depends_on = [hcloud_server.web]
+    
+    connection {
+      type        = "ssh"
+      host        = hcloud_server.web.ipv4_address
+      user        = "root"
+      private_key = file("~/.ssh/id_rsa")
+    }
+
+    provisioner "file" {
+      content = <<-EOT
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Automation Test</title>
+</head>
+<body>
+    <h1>Hello from Automation</h1>
+</body>
+</html>
 EOT
-  filename = "${path.module}/inventory"
-}
+      destination = "/tmp/index.html"
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "docker run -d --name hello -p 80:80 -v /tmp/index.html:/usr/share/nginx/html/index.html:ro nginx:latest"
+      ]
+    }
+  }
 
   output "ipv4" {
     value = hcloud_server.web.ipv4_address

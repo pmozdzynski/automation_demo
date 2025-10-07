@@ -1,2 +1,0 @@
-- name: Restart Nginx container
-  command: docker restart hello
