@@ -1,0 +1,64 @@
+name: Infrastructure Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  provision:
+    name: Provision Hetzner + Deploy App
+    runs-on: self-hosted
+
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      HETZNER_RUNNER_KEY: ${{ secrets.HETZNER_RUNNER_KEY }}
+      ANSIBLE_HOST_KEY_CHECKING: "False"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH for Ansible
+        run: |
+          mkdir -p ~/.ssh
+          echo "$HETZNER_RUNNER_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Run Ansible Playbook
+        run: ansible-playbook -i inventory playbook.yaml
+
+  destroy:
+    name: Destroy Infrastructure (manual)
+    runs-on: self-hosted
+    if: github.event_name == 'workflow_dispatch'
+    env:
+      HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+      HETZNER_RUNNER_KEY: ${{ secrets.HETZNER_RUNNER_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$HETZNER_RUNNER_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+
