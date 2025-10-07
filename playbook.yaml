@@ -2,3 +2,9 @@
   become: yes
   roles:
     - webserver
+
+- hosts: runner
+  become: yes
+  roles:
+    - runner
+

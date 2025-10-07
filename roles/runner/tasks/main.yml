@@ -1,0 +1,98 @@
+- name: Ensure runner user exists
+  user:
+    name: github
+    state: present
+    shell: /bin/bash
+    create_home: yes
+  become: yes
+
+- name: Ensure .ssh directory exists
+  file:
+    path: /home/github/.ssh
+    state: directory
+    owner: github
+    group: github
+    mode: '0700'
+  become: yes
+
+- name: Generate SSH key pair for runner (idempotent)
+  openssh_keypair:
+    path: /home/github/.ssh/id_rsa
+    type: rsa
+    size: 4096
+    owner: github
+    group: github
+    mode: '0600'
+  become: yes
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Ensure unzip is installed
+  apt:
+    name: unzip
+    state: present
+  become: yes
+
+- name: Download Terraform
+  get_url:
+    url: "https://releases.hashicorp.com/terraform/1.13.3/terraform_1.13.3_linux_amd64.zip"
+    dest: /tmp/terraform.zip
+    mode: '0644'
+  become: yes
+
+- name: Unzip Terraform
+  unarchive:
+    src: /tmp/terraform.zip
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: '0755'
+  become: yes
+
+- name: Create runner directory
+  file:
+    path: /opt/github-runner
+    state: directory
+    owner: github
+    group: github
+    mode: '0755'
+  become: yes
+
+- name: Download GitHub Actions runner
+  get_url:
+    url: "https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz"
+    dest: /opt/github-runner/actions-runner.tar.gz
+    mode: '0644'
+  become: yes
+
+- name: Extract GitHub Actions runner
+  unarchive:
+    src: /opt/github-runner/actions-runner.tar.gz
+    dest: /opt/github-runner
+    remote_src: yes
+    owner: github
+    group: github
+  become: yes
+
+- name: Configure self-hosted runner (idempotent)
+  command: ./config.sh --url https://github.com/pmozdzynski/automation_demo --token "{{ lookup('env','GITHUB_RUNNER_TOKEN') }}" --unattended --replace
+  args:
+    chdir: /opt/github-runner
+  become: yes
+  become_user: github
+  ignore_errors: yes   # runner already configured
+
+- name: Install runner service (must run as root)
+  command: ./svc.sh install
+  args:
+    chdir: /opt/github-runner
+  become: yes
+
+- name: Start runner service (must run as root)
+  command: ./svc.sh start
+  args:
+    chdir: /opt/github-runner
+  become: yes
+
