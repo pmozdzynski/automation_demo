@@ -29,7 +29,7 @@ resource "local_file" "ansible_inventory" {
   content = <<EOT
 [web]
 ${hcloud_server.web.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-
+EOT
   filename = "${path.module}/inventory"
 }
 
