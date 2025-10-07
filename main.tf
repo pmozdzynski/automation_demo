@@ -30,9 +30,6 @@ resource "local_file" "ansible_inventory" {
 [web]
 ${hcloud_server.web.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
-[runner]
-${hcloud_server.runner.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-EOT
   filename = "${path.module}/inventory"
 }
 
@@ -46,12 +43,3 @@ output "web_ipv4" {
 output "web_ipv6" {
   value = hcloud_server.web.ipv6_address
 }
-
-output "runner_ipv4" {
-  value = hcloud_server.runner.ipv4_address
-}
-
-output "runner_ipv6" {
-  value = hcloud_server.runner.ipv6_address
-}
-
