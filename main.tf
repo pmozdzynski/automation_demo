@@ -15,22 +15,11 @@ provider "hcloud" {
 # Web server (Docker + Nginx)
 # ------------------------------
 resource "hcloud_server" "web" {
-  name        = "web-automation-gibtelecom"
+  name        = "web-automation-gibtelecom-1"
   image       = "docker-ce"        # x86_64 supported
   server_type = "cpx11"            # smallest AMD server
   ssh_keys    = ["generic-key", "github-runner"]    # Existing Hetzner key + github-runner key
   location    = "hel1"             # Helsinki
-}
-
-# ------------------------------
-# GitHub self-hosted runner
-# ------------------------------
-resource "hcloud_server" "runner" {
-  name        = "github-runner"
-  image       = "docker-ce"
-  server_type = "cpx11"
-  ssh_keys    = ["generic-key"]
-  location    = "hel1"
 }
 
 # ------------------------------
