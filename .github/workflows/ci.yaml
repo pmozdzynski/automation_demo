@@ -44,20 +44,24 @@ jobs:
           fi
 
       - name: Terraform Init
-        run: terraform init
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform init
 
       - name: Terraform Validate
-        run: terraform validate
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform plan -out=tfplan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform apply -auto-approve tfplan
 
       - name: Copy Updated Inventory
         run: |
@@ -100,10 +104,12 @@ jobs:
           fi
 
       - name: Terraform Init
-        run: terraform init
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform init
 
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: $HOME/terraform-state
+        run: |
+          cd $HOME/terraform-state
+          terraform destroy -auto-approve
 
