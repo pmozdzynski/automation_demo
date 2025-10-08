@@ -12,7 +12,7 @@
   }
 
   resource "hcloud_server" "web" {
-    name        = "web-automation-gibtelecom"
+    name        = "web-automation-piotr"
     image       = "docker-ce"  # x86_64 supported
     server_type = "cpx11"             # smallest AMD server
     ssh_keys    = ["generic-key"]     # Existing Hetzner key
