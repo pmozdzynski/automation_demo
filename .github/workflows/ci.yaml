@@ -28,14 +28,14 @@ jobs:
 
       - name: Setup Terraform State Directory
         run: |
-          mkdir -p ~/terraform-state
-          cd ~/terraform-state
+          mkdir -p $HOME/terraform-state
+          cd $HOME/terraform-state
           # Copy Terraform files to state directory
           cp -r $GITHUB_WORKSPACE/* .
 
       - name: Backup Existing State (if exists)
         run: |
-          cd ~/terraform-state
+          cd $HOME/terraform-state
           if [ -f terraform.tfstate ]; then
             cp terraform.tfstate terraform.tfstate.backup.$(date +%Y%m%d_%H%M%S)
             echo "State file backed up"
@@ -45,23 +45,23 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
       - name: Copy Updated Inventory
         run: |
-          cp ~/terraform-state/inventory $GITHUB_WORKSPACE/inventory
+          cp $HOME/terraform-state/inventory $GITHUB_WORKSPACE/inventory
 
       - name: Run Ansible Playbook
         run: ansible-playbook -i inventory playbook.yaml
@@ -86,14 +86,14 @@ jobs:
 
       - name: Setup Terraform State Directory
         run: |
-          mkdir -p ~/terraform-state
-          cd ~/terraform-state
+          mkdir -p $HOME/terraform-state
+          cd $HOME/terraform-state
           # Copy Terraform files to state directory
           cp -r $GITHUB_WORKSPACE/* .
 
       - name: Backup State Before Destroy
         run: |
-          cd ~/terraform-state
+          cd $HOME/terraform-state
           if [ -f terraform.tfstate ]; then
             cp terraform.tfstate terraform.tfstate.backup.destroy.$(date +%Y%m%d_%H%M%S)
             echo "State file backed up before destroy"
@@ -101,9 +101,9 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
-        working-directory: ~/terraform-state
+        working-directory: $HOME/terraform-state
 
