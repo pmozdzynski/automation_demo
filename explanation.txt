@@ -1,0 +1,64 @@
+AUTOMATION DEMO - SYSTEM OVERVIEW
+=================================
+
+TOOL SELECTION
+--------------
+Terraform: IaC for server provisioning, state tracking
+Ansible: App deployment, idempotent config management  
+GitHub Actions: CI/CD pipeline with self-hosted runners
+Docker: Containerized app deployment
+
+WORKFLOW
+--------
+1. Terraform provisions Hetzner servers + generates inventory
+2. Ansible deploys apps (Nginx + GitHub runner) via SSH
+3. GitHub Actions automates the entire pipeline on push
+
+BRANCH VARIANTS
+---------------
+single_web
+
+Terraform + Ansible approach
+Current main workflow for web server deployment
+Deploys web server via Terraform, then configures it with Ansible
+
+single_web_terraform_only
+
+Terraform-only approach using provisioners
+Achieves similar results as single_web but without Ansible
+
+runner
+
+Deploys a web server and sets up a GitHub runner
+Useful for self-hosted CI/CD alongside web servers
+
+pipeline branch
+
+Base branch for CI/CD pipelines
+Does not trigger pipelines on its own
+Serves as a template or upstream for main
+main branch (created off pipeline)
+Production-ready branch
+Can add servers on-the-fly
+Active branch for CI/CD because pipeline is not triggering
+
+
+KEY ASSUMPTIONS
+---------------
+- Hetzner Cloud API access + SSH keys configured
+- Docker CE pre-installed on server images
+- GitHub repo with Actions enabled + secrets configured
+- Self-hosted runner approach (cost control)
+
+STATE MANAGEMENT
+----------------
+Terraform: Tracks infrastructure (servers exist/unchanged)
+Ansible: Manages application state (containers running)
+- Terraform sees server as "unchanged" 
+- Ansible detects container stopped and restarts it
+- Clean separation: infra vs app lifecycle
+
+BENEFITS
+--------
+Cost-effective, secure SSH access, self-healing apps, 
+modular design, easy scaling
