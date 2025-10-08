@@ -15,7 +15,7 @@ provider "hcloud" {
 # Web server (Docker + Nginx)
 # ------------------------------
 resource "hcloud_server" "web" {
-  name        = "web-automation-gibtelecom-1"
+  name        = "web-automation-piotr-1"
   image       = "docker-ce"        # x86_64 supported
   server_type = "cpx11"            # smallest AMD server
   ssh_keys    = ["generic-key", "github-runner"]    # Existing Hetzner key + github-runner key
