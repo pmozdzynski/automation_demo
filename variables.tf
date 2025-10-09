@@ -1,6 +1,6 @@
 variable "server_count" {
   type    = number
-  default = 2  # Default number of servers to create
+  default = 4  # Default number of servers to create
 }
 
 variable "server_type" {
