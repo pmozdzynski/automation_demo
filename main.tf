@@ -15,48 +15,29 @@ provider "hcloud" {
 # Web server (Docker + Nginx)
 # ------------------------------
 resource "hcloud_server" "web" {
-  name        = "web-automation-piotr-1"
-  image       = "docker-ce"        # x86_64 supported
-  server_type = "cpx11"            # smallest AMD server
-  ssh_keys    = ["generic-key", "github-runner"]    # Existing Hetzner key + github-runner key
-  location    = "hel1"             # Helsinki
+  count       = var.server_count  # Dynamically scale the number of servers
+  name        = "web-automation-piotr-${count.index + 1}"
+  image       = "docker-ce"
+  server_type = "cpx11"
+  ssh_keys    = ["generic-key", "github-runner"]
+  location    = "hel1"
 }
 
-resource "hcloud_server" "web2" {
-  name        = "web-automation-piotr-2"
-  image       = "docker-ce"        # x86_64 supported
-  server_type = "cpx11"            # smallest AMD server
-  ssh_keys    = ["generic-key", "github-runner"]    # Existing Hetzner key + github-runner key
-  location    = "hel1"             # Helsinki
-}
-
-# ------------------------------
-# Generate Ansible inventory
-# ------------------------------
 resource "local_file" "ansible_inventory" {
   content = <<EOT
 [web]
-${hcloud_server.web.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-${hcloud_server.web2.ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+%{ for i in range(var.server_count) }
+${hcloud_server.web[i].ipv4_address} ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+%{ endfor }
 EOT
   filename = "${path.module}/inventory"
 }
 
-# ------------------------------
-# Outputs
-# ------------------------------
 output "web_ipv4" {
-  value = hcloud_server.web.ipv4_address
+  value = [for server in hcloud_server.web : server.ipv4_address]
 }
+
 
 output "web_ipv6" {
-  value = hcloud_server.web.ipv6_address
-}
-
-output "web2_ipv4" {
-  value = hcloud_server.web2.ipv4_address
-}
-
-output "web2_ipv6" {
-  value = hcloud_server.web2.ipv6_address
+  value = [for server in hcloud_server.web : server.ipv6_address]
 }
